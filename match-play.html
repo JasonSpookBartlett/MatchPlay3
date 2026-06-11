@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Match Play</title>
+<meta name="application-name" content="Match Play">
+<meta name="description" content="Match Play - billiards match scorer">
+<meta name="theme-color" content="#0d0d0d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Match Play">
+<link rel="manifest" href="manifest.json">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --felt: #1a4d2e;
+    --felt-light: #246038;
+    --felt-dark: #0f2e1b;
+    --chalk: #c8d8c0;
+    --gold: #d4a843;
+    --ivory: #f0ead6;
+    --wood: #3b1f0a;
+    --neon-green: #39ff85;
+    --bg: #0d0d0d;
+    --panel: #161616;
+    --border: #2a2a2a;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    height: 100dvh;
+    background: var(--bg);
+    font-family: 'Inter', sans-serif;
+    color: var(--ivory);
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+
+  /* ─── SCREENS ─── */
+  .screen { display: none; width: 100vw; height: 100vh; height: 100dvh; }
+  .screen.active { display: flex; }
+
+  /* ─── SETUP SCREEN ─── */
+  #setup {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at center, #1a2a1a 0%, #0d0d0d 70%);
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .setup-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    letter-spacing: 0.08em;
+    color: var(--neon-green);
+    text-shadow: 0 0 20px rgba(57,255,133,0.4), 0 0 60px rgba(57,255,133,0.15);
+    line-height: 1;
+  }
+
+  .setup-title span { color: var(--gold); }
+
+  .setup-row {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+    max-width: 600px;
+    align-items: flex-end;
+  }
+
+  .setup-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .setup-field label {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--chalk);
+    opacity: 0.7;
+  }
+
+  .setup-field input {
+    background: #1a1a1a;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    color: var(--ivory);
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  .setup-field input:focus { border-color: var(--neon-green); }
+  .setup-field input::placeholder { color: #444; font-weight: 400; }
+
+  .race-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .race-row label {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--chalk);
+    opacity: 0.7;
+  }
+
+  .race-options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .race-btn {
+    background: #1a1a1a;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    color: var(--ivory);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    padding: 9px 18px;
+    cursor: pointer;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .race-btn.selected {
+    background: var(--felt);
+    border-color: var(--neon-green);
+    color: var(--neon-green);
+    box-shadow: 0 0 12px rgba(57,255,133,0.2);
+  }
+
+  .start-btn {
+    background: var(--felt);
+    border: 2px solid var(--neon-green);
+    border-radius: 10px;
+    color: var(--neon-green);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.1em;
+    padding: 12px 48px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 0 20px rgba(57,255,133,0.15);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .start-btn:active {
+    transform: scale(0.96);
+    box-shadow: 0 0 30px rgba(57,255,133,0.35);
+  }
+
+  /* ─── GAME SCREEN ─── */
+  #game {
+    flex-direction: column;
+    background: var(--bg);
+    position: relative;
+    height: 100dvh;
+    height: 100vh; /* fallback */
+  }
+
+  .game-main {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    overflow: hidden;
+    padding-bottom: 56px; /* reserve space for fixed strip */
+  }
+
+  /* Panel divider */
+  .panel-divider {
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--border) 30%, var(--border) 70%, transparent);
+    flex-shrink: 0;
+    align-self: stretch;
+  }
+
+  /* Player panels */
+  .player-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 12px 8px;
+    position: relative;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    transition: background 0.15s;
+  }
+
+  .player-panel:active { background: rgba(57,255,133,0.04); }
+
+  .score-display {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4rem, 16vw, 7rem);
+    line-height: 1;
+    color: var(--ivory);
+    transition: transform 0.1s, color 0.2s;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+
+  .score-display.bump {
+    animation: scoreBump 0.25s ease-out;
+    color: var(--neon-green);
+  }
+
+  .score-display.dip {
+    animation: scoreDip 0.3s ease-out;
+    color: #e05555;
+  }
+
+  @keyframes scoreDip {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(0.88); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes scoreBump {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+
+  .frames-track {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 240px;
+  }
+
+  .frame-dot {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    border: 1.5px solid #333;
+    background: transparent;
+    transition: all 0.25s;
+  }
+
+  .frame-dot.won {
+    background: var(--neon-green);
+    border-color: var(--neon-green);
+    box-shadow: 0 0 8px rgba(57,255,133,0.5);
+  }
+
+  .tap-hint {
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #444;
+    position: absolute;
+    bottom: 68px;
+  }
+
+  /* ─── BOTTOM STRIP ─── */
+  .bottom-strip {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: var(--panel);
+    border-top: 1.5px solid #3a3a3a;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0 14px;
+    gap: 8px;
+    z-index: 50;
+  }
+
+  .bottom-player-name {
+    flex: 1;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1rem, 3.5vw, 1.6rem);
+    letter-spacing: 0.08em;
+    color: var(--ivory);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bottom-player-name:last-child { text-align: right; }
+
+  .bottom-center {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  /* Race-to in bottom strip */
+  .race-to {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    color: var(--gold);
+    line-height: 1;
+    text-align: center;
+    cursor: pointer;
+    transition: color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .race-to:active { color: var(--neon-green); }
+  .race-to small {
+    font-size: 0.45rem;
+    letter-spacing: 0.18em;
+    color: #555;
+    font-family: 'Inter', sans-serif;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .undo-btn {
+    background: none;
+    border: 1.5px solid #444;
+    border-radius: 6px;
+    color: #aaa;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: 'Inter', sans-serif;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    white-space: nowrap;
+  }
+  .undo-btn:active { border-color: #888; color: #fff; }
+
+  .new-match-btn {
+    background: none;
+    border: 1.5px solid #444;
+    border-radius: 6px;
+    color: #aaa;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: 'Inter', sans-serif;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .new-match-btn:active { border-color: #888; color: #fff; }
+
+  /* ─── WINNER OVERLAY ─── */
+  #winner-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: rgba(0,0,0,0.92);
+    animation: overlayIn 0.4s ease-out;
+  }
+
+  #winner-overlay.show { display: flex; }
+
+  @keyframes overlayIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .winner-felt {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 40%, rgba(26,77,46,0.6) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .winner-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    animation: winnerDrop 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+  }
+
+  @keyframes winnerDrop {
+    from { transform: translateY(-40px) scale(0.85); opacity: 0; }
+    to   { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
+  .winner-eyebrow {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  .winner-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3.5rem, 14vw, 7rem);
+    letter-spacing: 0.05em;
+    color: var(--neon-green);
+    line-height: 1;
+    text-shadow:
+      0 0 30px rgba(57,255,133,0.7),
+      0 0 80px rgba(57,255,133,0.3),
+      0 0 120px rgba(57,255,133,0.1);
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { text-shadow: 0 0 30px rgba(57,255,133,0.7), 0 0 80px rgba(57,255,133,0.3); }
+    50%       { text-shadow: 0 0 50px rgba(57,255,133,1),   0 0 120px rgba(57,255,133,0.5); }
+  }
+
+  .winner-sub {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1.2rem, 5vw, 2.2rem);
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .winner-score-line {
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    color: #666;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .balls {
+    display: flex;
+    gap: 10px;
+    margin: 8px 0;
+  }
+
+  .ball {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fff, var(--neon-green) 60%, #0a3a1a);
+    box-shadow: 0 0 12px rgba(57,255,133,0.5), inset 0 -3px 6px rgba(0,0,0,0.4);
+    animation: ballFloat 2s ease-in-out infinite;
+  }
+
+  .ball:nth-child(2) { animation-delay: 0.3s; }
+  .ball:nth-child(3) { animation-delay: 0.6s; }
+  .ball:nth-child(4) { animation-delay: 0.9s; }
+  .ball:nth-child(5) { animation-delay: 1.2s; }
+
+  @keyframes ballFloat {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-6px); }
+  }
+
+  .play-again-btn {
+    margin-top: 16px;
+    background: var(--felt);
+    border: 2px solid var(--neon-green);
+    border-radius: 10px;
+    color: var(--neon-green);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.12em;
+    padding: 10px 36px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 0 20px rgba(57,255,133,0.15);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .play-again-btn:active { transform: scale(0.95); }
+
+  /* Confetti particles */
+  .confetti-wrap {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .confetti-piece {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 1px;
+    animation: confettiFall linear forwards;
+  }
+
+  @keyframes confettiFall {
+    0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* Race-to edit popup */
+
+  #raceto-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.75);
+  }
+  #raceto-modal.show { display: flex; }
+
+  .raceto-popup {
+    background: #1a1a1a;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    min-width: 200px;
+    animation: popIn 0.2s cubic-bezier(0.22,1,0.36,1);
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.85); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+
+  .raceto-popup label {
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--chalk);
+    opacity: 0.7;
+  }
+
+  .raceto-popup input[type=number] {
+    background: #0d0d0d;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    color: var(--gold);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    text-align: center;
+    width: 100px;
+    padding: 6px 10px;
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  .raceto-popup input[type=number]::-webkit-inner-spin-button,
+  .raceto-popup input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .raceto-popup input[type=number]:focus { border-color: var(--neon-green); }
+
+  .raceto-popup-btns {
+    display: flex;
+    gap: 10px;
+  }
+
+  .raceto-confirm {
+    background: var(--felt);
+    border: 1.5px solid var(--neon-green);
+    border-radius: 8px;
+    color: var(--neon-green);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    padding: 8px 22px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .raceto-cancel {
+    background: none;
+    border: 1.5px solid #333;
+    border-radius: 8px;
+    color: #555;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    padding: 8px 22px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Responsive tweaks for small screens */
+  @media (max-height: 380px) {
+    .score-display { font-size: clamp(3.5rem, 14vw, 6rem); }
+    .setup-title { font-size: 1.8rem; }
+    #setup { gap: 12px; padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setup" class="screen active">
+  <div class="setup-title">MATCH <span>PLAY</span></div>
+
+  <div class="setup-row">
+    <div class="setup-field">
+      <label>Player 1</label>
+      <input type="text" id="p1name" placeholder="Enter name" maxlength="14" autocomplete="off">
+    </div>
+    <div class="setup-field">
+      <label>Player 2</label>
+      <input type="text" id="p2name" placeholder="Enter name" maxlength="14" autocomplete="off">
+    </div>
+  </div>
+
+  <div class="race-row">
+    <label>Race to (frames)</label>
+    <div class="race-options" id="raceOptions">
+      <button class="race-btn" data-val="2">2</button>
+      <button class="race-btn" data-val="3">3</button>
+      <button class="race-btn" data-val="4">4</button>
+      <button class="race-btn" data-val="5">5</button>
+      <button class="race-btn" data-val="6">6</button>
+      <button class="race-btn selected" data-val="7">7</button>
+      <button class="race-btn" data-val="8">8</button>
+      <button class="race-btn" data-val="9">9</button>
+      <button class="race-btn" data-val="10">10</button>
+      <button class="race-btn" data-val="11">11</button>
+      <button class="race-btn" data-val="12">12</button>
+      <button class="race-btn" data-val="15">15</button>
+    </div>
+  </div>
+
+  <button class="start-btn" id="startBtn">BREAK &amp; BEGIN</button>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game" class="screen">
+  <div class="game-main">
+    <!-- Player 1 -->
+    <div class="player-panel" id="p1panel">
+      <div class="score-display" id="p1score">0</div>
+      <div class="frames-track" id="p1track"></div>
+    </div>
+
+    <!-- Divider -->
+    <div class="panel-divider"></div>
+
+    <!-- Player 2 -->
+    <div class="player-panel" id="p2panel">
+      <div class="score-display" id="p2score">0</div>
+      <div class="frames-track" id="p2track"></div>
+    </div>
+  </div>
+
+  <!-- Bottom strip -->
+  <div class="bottom-strip">
+    <div class="bottom-player-name" id="p1display">PLAYER 1</div>
+    <div class="bottom-center">
+      <button class="undo-btn" onclick="undoPoint()">UNDO</button>
+      <div class="race-to" onclick="openRaceToModal()"><small>RACE TO</small><span id="raceDisplay">7</span></div>
+      <button class="new-match-btn" onclick="goToSetup()">NEW MATCH</button>
+    </div>
+    <div class="bottom-player-name" id="p2display">PLAYER 2</div>
+  </div>
+</div>
+
+<!-- WINNER OVERLAY -->
+<div id="winner-overlay">
+  <div class="confetti-wrap" id="confettiWrap"></div>
+  <div class="winner-felt"></div>
+  <div class="winner-content">
+    <div class="winner-eyebrow">🎱 MATCH WINNER 🎱</div>
+    <div class="winner-name" id="winnerName">NAME</div>
+    <div class="winner-sub">WINS THE MATCH</div>
+    <div class="balls">
+      <div class="ball"></div>
+      <div class="ball"></div>
+      <div class="ball"></div>
+      <div class="ball"></div>
+      <div class="ball"></div>
+    </div>
+    <div class="winner-score-line" id="winnerScoreLine"></div>
+    <button class="play-again-btn" onclick="playAgain()">PLAY AGAIN</button>
+  </div>
+</div>
+
+<!-- RACE TO MODAL -->
+<div id="raceto-modal">
+  <div class="raceto-popup">
+    <label>Race to (frames)</label>
+    <input type="number" id="racetoInput" min="1" max="99">
+    <div class="raceto-popup-btns">
+      <button class="raceto-cancel" onclick="closeRaceToModal()">CANCEL</button>
+      <button class="raceto-confirm" onclick="confirmRaceTo()">SET</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let scores = [0, 0];
+  let raceTo = 7;
+  let names = ['PLAYER 1', 'PLAYER 2'];
+  let history = []; // [{player: 0|1}]
+  let matchOver = false;
+
+  function openRaceToModal() {
+    document.getElementById('racetoInput').value = raceTo;
+    document.getElementById('raceto-modal').classList.add('show');
+    setTimeout(() => document.getElementById('racetoInput').select(), 50);
+  }
+
+  function closeRaceToModal() {
+    document.getElementById('raceto-modal').classList.remove('show');
+  }
+
+  function confirmRaceTo() {
+    const val = parseInt(document.getElementById('racetoInput').value);
+    if (!val || val < 1) return;
+    raceTo = val;
+    document.getElementById('raceDisplay').textContent = raceTo;
+    // Ensure scores don't exceed new target; if someone already hit it, re-check
+    buildTracks();
+    updateTracks();
+    // Check if either player already meets the new target
+    for (let i = 0; i < 2; i++) {
+      if (scores[i] >= raceTo && !matchOver) {
+        matchOver = true;
+        closeRaceToModal();
+        setTimeout(() => showWinner(i), 200);
+        return;
+      }
+    }
+    closeRaceToModal();
+  }
+
+  // Close modal on backdrop tap
+  document.getElementById('raceto-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeRaceToModal();
+  });
+
+
+  [['p1panel', 0], ['p2panel', 1]].forEach(([id, player]) => {
+    const el = document.getElementById(id);
+    let touchStartY = null;
+    let touchStartX = null;
+    let moved = false;
+
+    el.addEventListener('touchstart', e => {
+      touchStartY = e.touches[0].clientY;
+      touchStartX = e.touches[0].clientX;
+      moved = false;
+    }, { passive: true });
+
+    el.addEventListener('touchmove', e => {
+      if (touchStartY === null) return;
+      const dy = e.touches[0].clientY - touchStartY;
+      const dx = e.touches[0].clientX - touchStartX;
+      if (Math.abs(dy) > 8 || Math.abs(dx) > 8) moved = true;
+    }, { passive: true });
+
+    el.addEventListener('touchend', e => {
+      if (touchStartY === null) return;
+      const dy = e.changedTouches[0].clientY - touchStartY;
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      const isSwipeDown = dy > 40 && dy > Math.abs(dx) * 1.2;
+
+      if (isSwipeDown) {
+        removePoint(player);
+      } else if (!moved) {
+        addPoint(player);
+      }
+      touchStartY = null;
+      touchStartX = null;
+      moved = false;
+    }, { passive: true });
+
+    // Mouse fallback for desktop testing
+    el.addEventListener('click', () => {
+      if (!('ontouchstart' in window)) addPoint(player);
+    });
+  });
+
+  // Race selector
+  document.querySelectorAll('.race-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.race-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+  });
+
+  document.getElementById('startBtn').addEventListener('click', startMatch);
+
+  function startMatch() {
+    const p1 = document.getElementById('p1name').value.trim().toUpperCase() || 'PLAYER 1';
+    const p2 = document.getElementById('p2name').value.trim().toUpperCase() || 'PLAYER 2';
+    names = [p1, p2];
+
+    const selected = document.querySelector('.race-btn.selected');
+    raceTo = selected ? parseInt(selected.dataset.val) : 7;
+
+    scores = [0, 0];
+    history = [];
+    matchOver = false;
+
+    document.getElementById('p1display').textContent = p1;
+    document.getElementById('p2display').textContent = p2;
+    document.getElementById('p1score').textContent = '0';
+    document.getElementById('p2score').textContent = '0';
+    document.getElementById('raceDisplay').textContent = raceTo;
+
+    buildTracks();
+    showScreen('game');
+  }
+
+  function buildTracks() {
+    ['p1track','p2track'].forEach((id, i) => {
+      const track = document.getElementById(id);
+      track.innerHTML = '';
+      for (let j = 0; j < raceTo; j++) {
+        const dot = document.createElement('div');
+        dot.className = 'frame-dot';
+        dot.id = `dot-${i}-${j}`;
+        track.appendChild(dot);
+      }
+    });
+  }
+
+  function updateTracks() {
+    for (let i = 0; i < 2; i++) {
+      for (let j = 0; j < raceTo; j++) {
+        const dot = document.getElementById(`dot-${i}-${j}`);
+        if (dot) dot.classList.toggle('won', j < scores[i]);
+      }
+    }
+  }
+
+  function addPoint(player) {
+    if (matchOver) return;
+    scores[player]++;
+    history.push({ player });
+
+    const scoreEl = document.getElementById(player === 0 ? 'p1score' : 'p2score');
+    scoreEl.textContent = scores[player];
+    scoreEl.classList.remove('bump');
+    void scoreEl.offsetWidth;
+    scoreEl.classList.add('bump');
+
+    updateTracks();
+
+    if (scores[player] >= raceTo) {
+      matchOver = true;
+      setTimeout(() => showWinner(player), 350);
+    }
+  }
+
+  function undoPoint() {
+    if (history.length === 0 || matchOver) return;
+    const last = history.pop();
+    scores[last.player] = Math.max(0, scores[last.player] - 1);
+
+    const scoreEl = document.getElementById(last.player === 0 ? 'p1score' : 'p2score');
+    scoreEl.textContent = scores[last.player];
+    updateTracks();
+  }
+
+  function removePoint(player) {
+    if (matchOver || scores[player] === 0) return;
+    scores[player]--;
+    // Also trim history if last entry was this player
+    for (let i = history.length - 1; i >= 0; i--) {
+      if (history[i].player === player) { history.splice(i, 1); break; }
+    }
+    const scoreEl = document.getElementById(player === 0 ? 'p1score' : 'p2score');
+    scoreEl.textContent = scores[player];
+    scoreEl.classList.remove('bump');
+    void scoreEl.offsetWidth;
+    scoreEl.classList.add('dip');
+    setTimeout(() => scoreEl.classList.remove('dip'), 300);
+    updateTracks();
+  }
+
+  function showWinner(player) {
+    document.getElementById('winnerName').textContent = names[player];
+    document.getElementById('winnerScoreLine').textContent =
+      `${names[player]} ${scores[player]} – ${names[1 - player]} ${scores[1 - player]}`;
+
+    spawnConfetti();
+
+    const overlay = document.getElementById('winner-overlay');
+    overlay.classList.add('show');
+  }
+
+  function spawnConfetti() {
+    const wrap = document.getElementById('confettiWrap');
+    wrap.innerHTML = '';
+    const colors = ['#39ff85','#d4a843','#ffffff','#1a4d2e','#f0ead6','#ff6b35'];
+    for (let i = 0; i < 60; i++) {
+      const p = document.createElement('div');
+      p.className = 'confetti-piece';
+      p.style.left = Math.random() * 100 + 'vw';
+      p.style.top = '-20px';
+      p.style.background = colors[Math.floor(Math.random() * colors.length)];
+      p.style.width = (6 + Math.random() * 8) + 'px';
+      p.style.height = (6 + Math.random() * 8) + 'px';
+      p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      p.style.animationDuration = (2 + Math.random() * 3) + 's';
+      p.style.animationDelay = (Math.random() * 1.5) + 's';
+      wrap.appendChild(p);
+    }
+  }
+
+  function playAgain() {
+    document.getElementById('winner-overlay').classList.remove('show');
+    scores = [0, 0];
+    history = [];
+    matchOver = false;
+
+    document.getElementById('p1score').textContent = '0';
+    document.getElementById('p2score').textContent = '0';
+    buildTracks();
+    updateTracks();
+  }
+
+  function goToSetup() {
+    document.getElementById('winner-overlay').classList.remove('show');
+    showScreen('setup');
+  }
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // Register service worker for PWA installability
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
