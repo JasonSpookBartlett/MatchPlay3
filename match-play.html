@@ -110,8 +110,7 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-    width: 100%;
-    max-width: 600px;
+    align-items: center;
   }
 
   .race-row label {
@@ -122,34 +121,123 @@
     opacity: 0.7;
   }
 
-  .race-options {
+  /* +/- stepper */
+  .stepper {
     display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .race-btn {
+    align-items: center;
     background: #1a1a1a;
     border: 1.5px solid var(--border);
-    border-radius: 8px;
-    color: var(--ivory);
-    font-family: 'Inter', sans-serif;
-    font-size: 0.9rem;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .stepper-btn {
+    background: none;
+    border: none;
+    color: var(--gold);
+    font-size: 1.4rem;
     font-weight: 700;
-    padding: 9px 18px;
+    width: 44px;
+    height: 44px;
     cursor: pointer;
-    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
     -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+  }
+  .stepper-btn:active { background: rgba(212,168,67,0.15); }
+
+  .stepper-divider {
+    width: 1px;
+    height: 28px;
+    background: var(--border);
+    flex-shrink: 0;
   }
 
-  .race-btn.selected {
-    background: var(--felt);
-    border-color: var(--neon-green);
-    color: var(--neon-green);
-    box-shadow: 0 0 12px rgba(57,255,133,0.2);
+  .stepper-value {
+    width: 56px;
+    text-align: center;
+    background: none;
+    border: none;
+    color: var(--ivory);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    outline: none;
+    -moz-appearance: textfield;
+    padding: 0;
+  }
+  .stepper-value::-webkit-inner-spin-button,
+  .stepper-value::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  /* ── Cue ball break selector ── */
+  .break-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 500px;
   }
 
-  .start-btn {
+  .break-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--chalk);
+    opacity: 0.7;
+  }
+
+  .break-names {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 8px;
+  }
+
+  .break-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(0.9rem, 3vw, 1.3rem);
+    letter-spacing: 0.08em;
+    color: #444;
+    transition: color 0.3s;
+    width: 120px;
+  }
+
+  .break-name.p1 { text-align: left; }
+  .break-name.p2 { text-align: right; }
+  .break-name.active { color: var(--neon-green); }
+
+  .break-track {
+    position: relative;
+    width: 100%;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .break-track-line {
+    position: absolute;
+    left: 20px; right: 20px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #333 20%, #333 80%, transparent);
+  }
+
+  .cue-ball-wrap {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: grab;
+    touch-action: none;
+    z-index: 2;
+    transition: filter 0.2s;
+  }
+
+  .cue-ball-wrap:active { cursor: grabbing; filter: brightness(1.15); }
+
+  .begin-btn {
     background: var(--felt);
     border: 2px solid var(--neon-green);
     border-radius: 10px;
@@ -157,14 +245,24 @@
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.4rem;
     letter-spacing: 0.1em;
-    padding: 12px 48px;
+    padding: 10px 48px;
     cursor: pointer;
     transition: all 0.2s;
     box-shadow: 0 0 20px rgba(57,255,133,0.15);
     -webkit-tap-highlight-color: transparent;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(6px);
   }
 
-  .start-btn:active {
+  .begin-btn.visible {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+    transition: opacity 0.3s, transform 0.3s;
+  }
+
+  .begin-btn:active {
     transform: scale(0.96);
     box-shadow: 0 0 30px rgba(57,255,133,0.35);
   }
@@ -172,10 +270,10 @@
   /* ─── GAME SCREEN ─── */
   #game {
     flex-direction: column;
-    background: var(--bg);
+    background: radial-gradient(ellipse at center, #1a2a1a 0%, #0d0d0d 70%);
     position: relative;
     height: 100dvh;
-    height: 100vh; /* fallback */
+    height: 100vh;
   }
 
   .game-main {
@@ -184,15 +282,7 @@
     flex-direction: row;
     align-items: stretch;
     overflow: hidden;
-    padding-bottom: 56px; /* reserve space for fixed strip */
-  }
-
-  /* Panel divider */
-  .panel-divider {
-    width: 1px;
-    background: linear-gradient(to bottom, transparent, var(--border) 30%, var(--border) 70%, transparent);
-    flex-shrink: 0;
-    align-self: stretch;
+    padding-bottom: 56px;
   }
 
   /* Player panels */
@@ -202,8 +292,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    padding: 12px 12px 8px;
+    gap: 8px;
+    padding: 12px 8px;
     position: relative;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
@@ -213,9 +303,18 @@
 
   .player-panel:active { background: rgba(57,255,133,0.04); }
 
+  .player-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1.4rem, 5vw, 2.4rem);
+    letter-spacing: 0.08em;
+    color: var(--chalk);
+    text-align: center;
+    line-height: 1;
+  }
+
   .score-display {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(4rem, 16vw, 7rem);
+    font-size: clamp(4rem, 14vw, 7rem);
     line-height: 1;
     color: var(--ivory);
     transition: transform 0.1s, color 0.2s;
@@ -246,15 +345,15 @@
 
   .frames-track {
     display: flex;
-    gap: 6px;
+    gap: 5px;
     flex-wrap: wrap;
     justify-content: center;
-    max-width: 240px;
+    max-width: 200px;
   }
 
   .frame-dot {
-    width: 13px;
-    height: 13px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     border: 1.5px solid #333;
     background: transparent;
@@ -267,13 +366,54 @@
     box-shadow: 0 0 8px rgba(57,255,133,0.5);
   }
 
-  .tap-hint {
+  /* Centre column */
+  .centre-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-shrink: 0;
+    width: 90px;
+    border-left: 1px solid #1e1e1e;
+    border-right: 1px solid #1e1e1e;
+  }
+
+  .vs-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--gold);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 16px rgba(212,168,67,0.4);
+  }
+
+  .race-to {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.15s;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .race-to:active { opacity: 0.7; }
+
+  .race-to-label {
+    font-family: 'Inter', sans-serif;
     font-size: 0.55rem;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: #444;
-    position: absolute;
-    bottom: 68px;
+    color: #666;
+  }
+
+  .race-to span:last-child {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    color: var(--gold);
+    line-height: 1;
   }
 
   /* ─── BOTTOM STRIP ─── */
@@ -288,88 +428,32 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 0 14px;
-    gap: 8px;
+    justify-content: center;
+    padding: 0 20px;
+    gap: 16px;
     z-index: 50;
   }
 
-  .bottom-player-name {
-    flex: 1;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(1rem, 3.5vw, 1.6rem);
-    letter-spacing: 0.08em;
-    color: var(--ivory);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .bottom-player-name:last-child { text-align: right; }
-
-  .bottom-center {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
-  }
-
-  /* Race-to in bottom strip */
-  .race-to {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.5rem;
-    color: var(--gold);
-    line-height: 1;
-    text-align: center;
-    cursor: pointer;
-    transition: color 0.15s;
-    -webkit-tap-highlight-color: transparent;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .race-to:active { color: var(--neon-green); }
-  .race-to small {
-    font-size: 0.45rem;
-    letter-spacing: 0.18em;
-    color: #555;
-    font-family: 'Inter', sans-serif;
-    text-transform: uppercase;
-    line-height: 1;
-  }
-
-  .undo-btn {
+  .strip-btn {
     background: none;
     border: 1.5px solid #444;
-    border-radius: 6px;
-    color: #aaa;
-    font-size: 0.6rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    border-radius: 8px;
+    color: #ccc;
     font-family: 'Inter', sans-serif;
-    padding: 6px 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 8px 24px;
     cursor: pointer;
     transition: all 0.2s;
     -webkit-tap-highlight-color: transparent;
-    white-space: nowrap;
   }
-  .undo-btn:active { border-color: #888; color: #fff; }
 
-  .new-match-btn {
-    background: none;
-    border: 1.5px solid #444;
-    border-radius: 6px;
-    color: #aaa;
-    font-size: 0.6rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-family: 'Inter', sans-serif;
-    padding: 6px 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .new-match-btn:active { border-color: #888; color: #fff; }
+  .strip-btn:active { border-color: #aaa; color: #fff; }
+
+  .exit-btn { border-color: #3a1a1a; color: #884444; }
+  .exit-btn:active { border-color: #e05555; color: #e05555; }
 
   /* ─── WINNER OVERLAY ─── */
   #winner-overlay {
@@ -633,23 +717,56 @@
 
   <div class="race-row">
     <label>Race to (frames)</label>
-    <div class="race-options" id="raceOptions">
-      <button class="race-btn" data-val="2">2</button>
-      <button class="race-btn" data-val="3">3</button>
-      <button class="race-btn" data-val="4">4</button>
-      <button class="race-btn" data-val="5">5</button>
-      <button class="race-btn" data-val="6">6</button>
-      <button class="race-btn selected" data-val="7">7</button>
-      <button class="race-btn" data-val="8">8</button>
-      <button class="race-btn" data-val="9">9</button>
-      <button class="race-btn" data-val="10">10</button>
-      <button class="race-btn" data-val="11">11</button>
-      <button class="race-btn" data-val="12">12</button>
-      <button class="race-btn" data-val="15">15</button>
+    <div class="stepper">
+      <button class="stepper-btn" id="stepDown">−</button>
+      <div class="stepper-divider"></div>
+      <input class="stepper-value" type="number" id="raceInput" value="7" min="1" max="99">
+      <div class="stepper-divider"></div>
+      <button class="stepper-btn" id="stepUp">+</button>
     </div>
   </div>
 
-  <button class="start-btn" id="startBtn">BREAK &amp; BEGIN</button>
+  <div class="break-section">
+    <div class="break-label">Who breaks? Slide the ball</div>
+    <div class="break-names">
+      <div class="break-name p1" id="breakName1">PLAYER 1</div>
+      <div class="break-name p2" id="breakName2">PLAYER 2</div>
+    </div>
+    <div class="break-track" id="breakTrack">
+      <div class="break-track-line"></div>
+      <div class="cue-ball-wrap" id="cueBall">
+        <svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="ballGrad" cx="38%" cy="32%" r="60%">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="35%" stop-color="#f0f0ee"/>
+              <stop offset="75%" stop-color="#d8d8d4"/>
+              <stop offset="100%" stop-color="#b0b0aa"/>
+            </radialGradient>
+            <radialGradient id="shadowGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="60%" stop-color="rgba(0,0,0,0)"/>
+              <stop offset="100%" stop-color="rgba(0,0,0,0.35)"/>
+            </radialGradient>
+            <radialGradient id="specular" cx="38%" cy="30%" r="25%">
+              <stop offset="0%" stop-color="rgba(255,255,255,0.9)"/>
+              <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+            </radialGradient>
+            <filter id="ballShadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="2" dy="3" stdDeviation="3" flood-color="rgba(0,0,0,0.5)"/>
+            </filter>
+          </defs>
+          <circle cx="30" cy="30" r="28" fill="url(#ballGrad)" filter="url(#ballShadow)"/>
+          <circle cx="30" cy="30" r="28" fill="url(#shadowGrad)"/>
+          <circle cx="30" cy="30" r="28" fill="url(#specular)"/>
+          <!-- subtle surface texture seam lines -->
+          <ellipse cx="30" cy="30" rx="14" ry="27" fill="none" stroke="rgba(180,180,175,0.25)" stroke-width="0.8"/>
+          <line x1="2" y1="30" x2="58" y2="30" stroke="rgba(180,180,175,0.2)" stroke-width="0.8"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <button class="begin-btn" id="beginBtn">BEGIN MATCH</button>
 </div>
 
 <!-- GAME SCREEN -->
@@ -657,29 +774,29 @@
   <div class="game-main">
     <!-- Player 1 -->
     <div class="player-panel" id="p1panel">
+      <div class="player-name" id="p1display">PLAYER 1</div>
       <div class="score-display" id="p1score">0</div>
-      <div class="frames-track" id="p1track"></div>
     </div>
 
-    <!-- Divider -->
-    <div class="panel-divider"></div>
+    <!-- Centre column -->
+    <div class="centre-col">
+      <div class="vs-text">vs.</div>
+      <div class="race-to" onclick="openRaceToModal()">
+        <span class="race-to-label">Race to </span><span id="raceDisplay">7</span>
+      </div>
+    </div>
 
     <!-- Player 2 -->
     <div class="player-panel" id="p2panel">
+      <div class="player-name" id="p2display">PLAYER 2</div>
       <div class="score-display" id="p2score">0</div>
-      <div class="frames-track" id="p2track"></div>
     </div>
   </div>
 
   <!-- Bottom strip -->
   <div class="bottom-strip">
-    <div class="bottom-player-name" id="p1display">PLAYER 1</div>
-    <div class="bottom-center">
-      <button class="undo-btn" onclick="undoPoint()">UNDO</button>
-      <div class="race-to" onclick="openRaceToModal()"><small>RACE TO</small><span id="raceDisplay">7</span></div>
-      <button class="new-match-btn" onclick="goToSetup()">NEW MATCH</button>
-    </div>
-    <div class="bottom-player-name" id="p2display">PLAYER 2</div>
+    <button class="strip-btn" onclick="goToSetup()">NEW MATCH</button>
+    <button class="strip-btn exit-btn" onclick="exitApp()">EXIT APP</button>
   </div>
 </div>
 
@@ -737,10 +854,6 @@
     if (!val || val < 1) return;
     raceTo = val;
     document.getElementById('raceDisplay').textContent = raceTo;
-    // Ensure scores don't exceed new target; if someone already hit it, re-check
-    buildTracks();
-    updateTracks();
-    // Check if either player already meets the new target
     for (let i = 0; i < 2; i++) {
       if (scores[i] >= raceTo && !matchOver) {
         matchOver = true;
@@ -782,9 +895,12 @@
       const dy = e.changedTouches[0].clientY - touchStartY;
       const dx = e.changedTouches[0].clientX - touchStartX;
       const isSwipeDown = dy > 40 && dy > Math.abs(dx) * 1.2;
+      const isSwipeUp   = dy < -40 && Math.abs(dy) > Math.abs(dx) * 1.2;
 
       if (isSwipeDown) {
         removePoint(player);
+      } else if (isSwipeUp) {
+        addPoint(player);
       } else if (!moved) {
         addPoint(player);
       }
@@ -799,23 +915,139 @@
     });
   });
 
-  // Race selector
-  document.querySelectorAll('.race-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.race-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
+  // ── Stepper ──
+  const raceInput = document.getElementById('raceInput');
+  document.getElementById('stepDown').addEventListener('click', () => {
+    const v = parseInt(raceInput.value) || 7;
+    if (v > 1) raceInput.value = v - 1;
+  });
+  document.getElementById('stepUp').addEventListener('click', () => {
+    const v = parseInt(raceInput.value) || 7;
+    if (v < 99) raceInput.value = v + 1;
+  });
+  raceInput.addEventListener('change', () => {
+    let v = parseInt(raceInput.value);
+    if (!v || v < 1) v = 1;
+    if (v > 99) v = 99;
+    raceInput.value = v;
+  });
+
+  // ── Cue ball drag ──
+  let breakPlayer = null; // 0 = p1, 1 = p2, null = centre
+  const cueBall   = document.getElementById('cueBall');
+  const breakTrack = document.getElementById('breakTrack');
+  const beginBtn  = document.getElementById('beginBtn');
+  let dragStartX  = null;
+  let ballOffset  = 0;
+  const SNAP_DIST = 60;
+
+  function getBallLimits() {
+    const trackRect = breakTrack.getBoundingClientRect();
+    const ballW = cueBall.offsetWidth;
+    const centre = trackRect.width / 2 - ballW / 2;
+    const leftSnap  = 10;
+    const rightSnap = trackRect.width - ballW - 10;
+    return { centre, leftSnap, rightSnap, trackWidth: trackRect.width };
+  }
+
+  function updateBreakNames() {
+    document.getElementById('breakName1').classList.toggle('active', breakPlayer === 0);
+    document.getElementById('breakName2').classList.toggle('active', breakPlayer === 1);
+    beginBtn.classList.toggle('visible', breakPlayer !== null);
+  }
+
+  function snapBall(x) {
+    const { centre, leftSnap, rightSnap, trackWidth } = getBallLimits();
+    const mid = trackWidth / 2 - cueBall.offsetWidth / 2;
+    if (x < mid - SNAP_DIST) {
+      cueBall.style.left = leftSnap + 'px';
+      cueBall.style.transform = 'none';
+      breakPlayer = 0;
+    } else if (x > mid + SNAP_DIST) {
+      cueBall.style.left = rightSnap + 'px';
+      cueBall.style.transform = 'none';
+      breakPlayer = 1;
+    } else {
+      cueBall.style.left = '50%';
+      cueBall.style.transform = 'translateX(-50%)';
+      breakPlayer = null;
+    }
+    updateBreakNames();
+  }
+
+  // Touch drag
+  cueBall.addEventListener('touchstart', e => {
+    dragStartX = e.touches[0].clientX;
+    const rect = cueBall.getBoundingClientRect();
+    const trackRect = breakTrack.getBoundingClientRect();
+    ballOffset = rect.left - trackRect.left;
+    cueBall.style.transition = 'none';
+    cueBall.style.transform = 'none';
+  }, { passive: true });
+
+  cueBall.addEventListener('touchmove', e => {
+    if (dragStartX === null) return;
+    const dx = e.touches[0].clientX - dragStartX;
+    const trackRect = breakTrack.getBoundingClientRect();
+    let newX = ballOffset + dx;
+    newX = Math.max(0, Math.min(newX, trackRect.width - cueBall.offsetWidth));
+    cueBall.style.left = newX + 'px';
+    cueBall.style.transform = 'none';
+  }, { passive: true });
+
+  cueBall.addEventListener('touchend', e => {
+    if (dragStartX === null) return;
+    cueBall.style.transition = 'left 0.25s cubic-bezier(0.22,1,0.36,1)';
+    const trackRect = breakTrack.getBoundingClientRect();
+    const rect = cueBall.getBoundingClientRect();
+    const currentX = rect.left - trackRect.left;
+    snapBall(currentX);
+    dragStartX = null;
+  }, { passive: true });
+
+  // Mouse drag (desktop)
+  cueBall.addEventListener('mousedown', e => {
+    dragStartX = e.clientX;
+    const rect = cueBall.getBoundingClientRect();
+    const trackRect = breakTrack.getBoundingClientRect();
+    ballOffset = rect.left - trackRect.left;
+    cueBall.style.transition = 'none';
+    cueBall.style.transform = 'none';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (dragStartX === null) return;
+    const dx = e.clientX - dragStartX;
+    const trackRect = breakTrack.getBoundingClientRect();
+    let newX = ballOffset + dx;
+    newX = Math.max(0, Math.min(newX, trackRect.width - cueBall.offsetWidth));
+    cueBall.style.left = newX + 'px';
+  });
+  document.addEventListener('mouseup', e => {
+    if (dragStartX === null) return;
+    cueBall.style.transition = 'left 0.25s cubic-bezier(0.22,1,0.36,1)';
+    const trackRect = breakTrack.getBoundingClientRect();
+    const rect = cueBall.getBoundingClientRect();
+    const currentX = rect.left - trackRect.left;
+    snapBall(currentX);
+    dragStartX = null;
+  });
+
+  // Update break names when player names change
+  ['p1name','p2name'].forEach((id, i) => {
+    document.getElementById(id).addEventListener('input', e => {
+      const val = e.target.value.trim().toUpperCase() || (i === 0 ? 'PLAYER 1' : 'PLAYER 2');
+      document.getElementById(i === 0 ? 'breakName1' : 'breakName2').textContent = val;
     });
   });
 
-  document.getElementById('startBtn').addEventListener('click', startMatch);
+  document.getElementById('beginBtn').addEventListener('click', startMatch);
 
   function startMatch() {
     const p1 = document.getElementById('p1name').value.trim().toUpperCase() || 'PLAYER 1';
     const p2 = document.getElementById('p2name').value.trim().toUpperCase() || 'PLAYER 2';
     names = [p1, p2];
-
-    const selected = document.querySelector('.race-btn.selected');
-    raceTo = selected ? parseInt(selected.dataset.val) : 7;
+    raceTo = parseInt(raceInput.value) || 7;
 
     scores = [0, 0];
     history = [];
@@ -831,27 +1063,8 @@
     showScreen('game');
   }
 
-  function buildTracks() {
-    ['p1track','p2track'].forEach((id, i) => {
-      const track = document.getElementById(id);
-      track.innerHTML = '';
-      for (let j = 0; j < raceTo; j++) {
-        const dot = document.createElement('div');
-        dot.className = 'frame-dot';
-        dot.id = `dot-${i}-${j}`;
-        track.appendChild(dot);
-      }
-    });
-  }
-
-  function updateTracks() {
-    for (let i = 0; i < 2; i++) {
-      for (let j = 0; j < raceTo; j++) {
-        const dot = document.getElementById(`dot-${i}-${j}`);
-        if (dot) dot.classList.toggle('won', j < scores[i]);
-      }
-    }
-  }
+  function buildTracks() { /* dots removed */ }
+  function updateTracks() { /* dots removed */ }
 
   function addPoint(player) {
     if (matchOver) return;
@@ -936,13 +1149,17 @@
 
     document.getElementById('p1score').textContent = '0';
     document.getElementById('p2score').textContent = '0';
-    buildTracks();
-    updateTracks();
   }
 
   function goToSetup() {
     document.getElementById('winner-overlay').classList.remove('show');
     showScreen('setup');
+  }
+
+  function exitApp() {
+    window.close();
+    // Fallback for browsers that block window.close()
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0d0d0d;font-family:sans-serif;color:#444;font-size:1rem;letter-spacing:0.1em;text-transform:uppercase;">You can now close this tab</div>';
   }
 
   function showScreen(id) {
