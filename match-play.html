@@ -57,14 +57,14 @@
     align-items: center;
     justify-content: center;
     background: radial-gradient(ellipse at center, #1a2a1a 0%, #0d0d0d 70%);
-    gap: 20px;
-    padding: 20px;
+    gap: 12px;
+    padding: 14px 20px;
     position: relative;
   }
 
   .setup-title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-size: clamp(1.6rem, 5vw, 2.8rem);
     letter-spacing: 0.08em;
     color: var(--neon-green);
     text-shadow: 0 0 20px rgba(57,255,133,0.4), 0 0 60px rgba(57,255,133,0.15);
@@ -183,7 +183,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
     width: 100%;
     max-width: 500px;
   }
@@ -219,7 +219,7 @@
   .break-track {
     position: relative;
     width: 100%;
-    height: 70px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -244,55 +244,19 @@
 
   .cue-ball-wrap:active { cursor: grabbing; filter: brightness(1.15); }
 
-  .begin-btn {
-    background: var(--felt);
-    border: 2px solid var(--neon-green);
-    border-radius: 10px;
-    color: var(--neon-green);
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.4rem;
-    letter-spacing: 0.1em;
-    padding: 10px 48px;
-    cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 0 20px rgba(57,255,133,0.15);
-    -webkit-tap-highlight-color: transparent;
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(6px);
-  }
-
-  .begin-btn.visible {
-    opacity: 1;
-    pointer-events: all;
-    transform: translateY(0);
-    transition: opacity 0.3s, transform 0.3s;
-  }
-
-  .begin-btn:active {
-    transform: scale(0.96);
-    box-shadow: 0 0 30px rgba(57,255,133,0.35);
-  }
-
   .setup-exit-btn {
     background: none;
-    border: 1.5px solid #3a1a1a;
-    border-radius: 8px;
-    color: #664444;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.65rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 7px 20px;
+    border: none;
+    padding: 4px;
     cursor: pointer;
-    transition: all 0.2s;
     -webkit-tap-highlight-color: transparent;
     position: absolute;
-    bottom: 16px;
-    right: 16px;
+    bottom: 12px;
+    right: 12px;
+    opacity: 0.6;
+    transition: opacity 0.2s, transform 0.2s;
   }
-  .setup-exit-btn:active { border-color: #e05555; color: #e05555; }
+  .setup-exit-btn:active { opacity: 1; transform: scale(0.92); }
 
   /* ─── GAME SCREEN ─── */
   #game {
@@ -488,38 +452,28 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 56px;
-    background: var(--panel);
-    border-top: 1.5px solid #3a3a3a;
+    height: 60px;
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: center;
-    padding: 0 60px;
-    gap: 16px;
+    justify-content: space-between;
+    padding: 0 12px;
     z-index: 50;
+    pointer-events: none;
   }
 
-  .strip-btn {
+  .icon-btn {
     background: none;
-    border: 1.5px solid #444;
-    border-radius: 8px;
-    color: #ccc;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 8px 24px;
+    border: none;
+    padding: 4px;
     cursor: pointer;
-    transition: all 0.2s;
     -webkit-tap-highlight-color: transparent;
+    opacity: 0.65;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: all;
   }
 
-  .strip-btn:active { border-color: #aaa; color: #fff; }
-
-  .exit-btn { border-color: #3a1a1a; color: #884444; }
-  .exit-btn:active { border-color: #e05555; color: #e05555; }
+  .icon-btn:active { opacity: 1; transform: scale(0.9); }
 
   /* ─── WINNER OVERLAY ─── */
   #winner-overlay {
@@ -630,8 +584,13 @@
     50%       { transform: translateY(-6px); }
   }
 
-  .play-again-btn {
+  .winner-btns {
     margin-top: 16px;
+    display: flex;
+    gap: 14px;
+  }
+
+  .play-again-btn {
     background: var(--felt);
     border: 2px solid var(--neon-green);
     border-radius: 10px;
@@ -639,7 +598,7 @@
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.2rem;
     letter-spacing: 0.12em;
-    padding: 10px 36px;
+    padding: 10px 32px;
     cursor: pointer;
     transition: all 0.2s;
     box-shadow: 0 0 20px rgba(57,255,133,0.15);
@@ -647,6 +606,22 @@
   }
 
   .play-again-btn:active { transform: scale(0.95); }
+
+  .return-btn {
+    background: none;
+    border: 2px solid var(--gold);
+    border-radius: 10px;
+    color: var(--gold);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.12em;
+    padding: 10px 32px;
+    cursor: pointer;
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .return-btn:active { transform: scale(0.95); }
 
   /* Confetti particles */
   .confetti-wrap {
@@ -800,7 +775,7 @@
     <div class="break-track" id="breakTrack">
       <div class="break-track-line"></div>
       <div class="cue-ball-wrap" id="cueBall">
-        <svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+        <svg width="50" height="50" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <radialGradient id="ballGrad" cx="38%" cy="32%" r="60%">
               <stop offset="0%" stop-color="#ffffff"/>
@@ -831,8 +806,37 @@
     </div>
   </div>
 
-  <button class="begin-btn" id="beginBtn">BEGIN MATCH</button>
-  <button class="setup-exit-btn" onclick="exitApp()">EXIT APP</button>
+  <button class="setup-exit-btn" onclick="exitApp()" title="Exit App">
+    <svg width="36" height="36" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="eightBallGrad" cx="38%" cy="32%" r="62%">
+          <stop offset="0%"   stop-color="#3a3a3a"/>
+          <stop offset="40%"  stop-color="#1a1a1a"/>
+          <stop offset="100%" stop-color="#000000"/>
+        </radialGradient>
+        <radialGradient id="eightSpecular" cx="36%" cy="28%" r="28%">
+          <stop offset="0%"   stop-color="rgba(255,255,255,0.45)"/>
+          <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+        </radialGradient>
+        <radialGradient id="eightCircle" cx="50%" cy="45%" r="55%">
+          <stop offset="0%"   stop-color="#ffffff"/>
+          <stop offset="100%" stop-color="#e8e8e8"/>
+        </radialGradient>
+        <filter id="eBallShadow">
+          <feDropShadow dx="1" dy="2" stdDeviation="2.5" flood-color="rgba(0,0,0,0.7)"/>
+        </filter>
+      </defs>
+      <!-- Ball body -->
+      <circle cx="30" cy="30" r="28" fill="url(#eightBallGrad)" filter="url(#eBallShadow)"/>
+      <!-- White circle -->
+      <circle cx="30" cy="32" r="11" fill="url(#eightCircle)"/>
+      <!-- 8 numeral -->
+      <text x="30" y="37" font-family="Arial, sans-serif" font-size="13" font-weight="bold"
+            text-anchor="middle" fill="#111">8</text>
+      <!-- Specular highlight -->
+      <circle cx="30" cy="30" r="28" fill="url(#eightSpecular)"/>
+    </svg>
+  </button>
 </div>
 
 <!-- GAME SCREEN -->
@@ -862,8 +866,83 @@
 
   <!-- Bottom strip -->
   <div class="bottom-strip">
-    <button class="strip-btn" onclick="goToSetup()">NEW MATCH</button>
-    <button class="strip-btn exit-btn" onclick="exitApp()">EXIT APP</button>
+    <!-- Triangle Rack - New Match -->
+    <button class="icon-btn rack-btn" onclick="goToSetup()" title="New Match">
+      <svg width="44" height="44" viewBox="0 0 80 72" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="#8B5E3C"/>
+            <stop offset="40%"  stop-color="#6B3F1E"/>
+            <stop offset="100%" stop-color="#4a2a0e"/>
+          </linearGradient>
+          <linearGradient id="woodSheen" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stop-color="rgba(255,255,255,0.12)"/>
+            <stop offset="50%"  stop-color="rgba(255,255,255,0)"/>
+            <stop offset="100%" stop-color="rgba(0,0,0,0.15)"/>
+          </linearGradient>
+          <filter id="rackShadow">
+            <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.6)"/>
+          </filter>
+        </defs>
+        <!-- Rack triangle outline - wooden frame viewed from above -->
+        <!-- Outer triangle -->
+        <polygon points="40,4 76,68 4,68" fill="url(#woodGrad)" filter="url(#rackShadow)"/>
+        <!-- Wood grain sheen -->
+        <polygon points="40,4 76,68 4,68" fill="url(#woodSheen)"/>
+        <!-- Inner cutout - hollow centre -->
+        <polygon points="40,14 68,62 12,62" fill="transparent"/>
+        <!-- The wooden frame strips -->
+        <!-- Left side strip -->
+        <polygon points="40,4 4,68 12,62 40,14" fill="#7a4e28"/>
+        <!-- Right side strip -->
+        <polygon points="40,4 76,68 68,62 40,14" fill="#5c3418"/>
+        <!-- Bottom strip -->
+        <polygon points="4,68 76,68 68,62 12,62" fill="#6b3f1e"/>
+        <!-- Wood grain lines -->
+        <line x1="22" y1="36" x2="30" y2="62" stroke="rgba(0,0,0,0.12)" stroke-width="1"/>
+        <line x1="58" y1="36" x2="50" y2="62" stroke="rgba(0,0,0,0.12)" stroke-width="1"/>
+        <!-- Corner joints - darker wood at corners -->
+        <circle cx="40" cy="7"  r="4" fill="#3d1f08"/>
+        <circle cx="73" cy="66" r="4" fill="#3d1f08"/>
+        <circle cx="7"  cy="66" r="4" fill="#3d1f08"/>
+        <!-- Balls racked inside - just coloured dots suggesting balls -->
+        <circle cx="40" cy="30" r="5"   fill="#e8c840" opacity="0.9"/>
+        <circle cx="34" cy="41" r="5"   fill="#cc3333" opacity="0.9"/>
+        <circle cx="46" cy="41" r="5"   fill="#3355cc" opacity="0.9"/>
+        <circle cx="28" cy="52" r="5"   fill="#cc6600" opacity="0.9"/>
+        <circle cx="40" cy="52" r="5"   fill="#111111" opacity="0.9"/>
+        <circle cx="52" cy="52" r="5"   fill="#993399" opacity="0.9"/>
+      </svg>
+    </button>
+
+    <!-- 8-ball - Exit App -->
+    <button class="icon-btn eightball-btn" onclick="exitApp()" title="Exit App">
+      <svg width="40" height="40" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="eBallG2" cx="38%" cy="32%" r="62%">
+            <stop offset="0%"   stop-color="#3a3a3a"/>
+            <stop offset="40%"  stop-color="#1a1a1a"/>
+            <stop offset="100%" stop-color="#000000"/>
+          </radialGradient>
+          <radialGradient id="eSpec2" cx="36%" cy="28%" r="28%">
+            <stop offset="0%"   stop-color="rgba(255,255,255,0.45)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+          </radialGradient>
+          <radialGradient id="eCirc2" cx="50%" cy="45%" r="55%">
+            <stop offset="0%"   stop-color="#ffffff"/>
+            <stop offset="100%" stop-color="#e8e8e8"/>
+          </radialGradient>
+          <filter id="eShadow2">
+            <feDropShadow dx="1" dy="2" stdDeviation="2.5" flood-color="rgba(0,0,0,0.7)"/>
+          </filter>
+        </defs>
+        <circle cx="30" cy="30" r="28" fill="url(#eBallG2)" filter="url(#eShadow2)"/>
+        <circle cx="30" cy="32" r="11" fill="url(#eCirc2)"/>
+        <text x="30" y="37" font-family="Arial, sans-serif" font-size="13" font-weight="bold"
+              text-anchor="middle" fill="#111">8</text>
+        <circle cx="30" cy="30" r="28" fill="url(#eSpec2)"/>
+      </svg>
+    </button>
   </div>
 </div>
 
@@ -883,7 +962,10 @@
       <div class="ball"></div>
     </div>
     <div class="winner-score-line" id="winnerScoreLine"></div>
-    <button class="play-again-btn" onclick="playAgain()">PLAY AGAIN</button>
+    <div class="winner-btns">
+      <button class="play-again-btn" onclick="rematch()">REMATCH</button>
+      <button class="return-btn" onclick="returnToSetup()">RETURN</button>
+    </div>
   </div>
 </div>
 
@@ -905,6 +987,7 @@
   let names = ['PLAYER 1', 'PLAYER 2'];
   let history = []; // [{player: 0|1}]
   let matchOver = false;
+  let lastWinner = null;
 
   function openRaceToModal() {
     document.getElementById('racetoInput').value = raceTo;
@@ -1029,7 +1112,6 @@
   let breakPlayer = null; // 0 = p1, 1 = p2, null = centre
   const cueBall   = document.getElementById('cueBall');
   const breakTrack = document.getElementById('breakTrack');
-  const beginBtn  = document.getElementById('beginBtn');
   let dragStartX  = null;
   let ballOffset  = 0;
   const SNAP_DIST = 60;
@@ -1046,7 +1128,6 @@
   function updateBreakNames() {
     document.getElementById('breakName1').classList.toggle('active', breakPlayer === 0);
     document.getElementById('breakName2').classList.toggle('active', breakPlayer === 1);
-    beginBtn.classList.toggle('visible', breakPlayer !== null);
   }
 
   function snapBall(x) {
@@ -1066,6 +1147,10 @@
       breakPlayer = null;
     }
     updateBreakNames();
+    // Auto-start as soon as a player is selected
+    if (breakPlayer !== null) {
+      setTimeout(() => startMatch(), 350);
+    }
   }
 
   // Touch drag
@@ -1133,8 +1218,6 @@
       document.getElementById(i === 0 ? 'breakName1' : 'breakName2').textContent = val;
     });
   });
-
-  document.getElementById('beginBtn').addEventListener('click', startMatch);
 
   function startMatch() {
     const p1 = document.getElementById('p1name').value.trim().toUpperCase() || 'PLAYER 1';
@@ -1209,11 +1292,46 @@
     document.getElementById('winnerName').textContent = names[player];
     document.getElementById('winnerScoreLine').textContent =
       `${names[player]} ${scores[player]} – ${names[1 - player]} ${scores[1 - player]}`;
-
+    lastWinner = player;
     spawnConfetti();
-
     const overlay = document.getElementById('winner-overlay');
     overlay.classList.add('show');
+  }
+
+  function rematch() {
+    // Winner of the match breaks the rematch
+    document.getElementById('winner-overlay').classList.remove('show');
+    scores = [0, 0];
+    history = [];
+    matchOver = false;
+    raceTo = 7;
+    document.getElementById('raceDisplay').textContent = raceTo;
+    document.getElementById('p1score').textContent = '0';
+    document.getElementById('p2score').textContent = '0';
+    setActivePlayer(lastWinner !== null ? lastWinner : 0);
+    showScreen('game');
+  }
+
+  function returnToSetup() {
+    document.getElementById('winner-overlay').classList.remove('show');
+    // Clear name fields
+    document.getElementById('p1name').value = '';
+    document.getElementById('p2name').value = '';
+    // Reset break names display
+    document.getElementById('breakName1').textContent = 'PLAYER 1';
+    document.getElementById('breakName2').textContent = 'PLAYER 2';
+    // Reset race to 7
+    raceTo = 7;
+    document.getElementById('raceInput').value = 7;
+    // Reset cue ball to centre
+    breakPlayer = null;
+    lastWinner = null;
+    cueBall.style.transition = 'left 0.3s cubic-bezier(0.22,1,0.36,1)';
+    cueBall.style.left = '50%';
+    cueBall.style.transform = 'translateX(-50%)';
+    document.getElementById('breakName1').classList.remove('active');
+    document.getElementById('breakName2').classList.remove('active');
+    showScreen('setup');
   }
 
   function spawnConfetti() {
@@ -1235,18 +1353,18 @@
     }
   }
 
-  function playAgain() {
-    document.getElementById('winner-overlay').classList.remove('show');
-    scores = [0, 0];
-    history = [];
-    matchOver = false;
-    document.getElementById('p1score').textContent = '0';
-    document.getElementById('p2score').textContent = '0';
-    setActivePlayer(breakPlayer !== null ? breakPlayer : 0);
-  }
-
   function goToSetup() {
     document.getElementById('winner-overlay').classList.remove('show');
+    // Reset race to 7
+    raceTo = 7;
+    document.getElementById('raceInput').value = 7;
+    // Reset cue ball to centre
+    breakPlayer = null;
+    cueBall.style.transition = 'left 0.3s cubic-bezier(0.22,1,0.36,1)';
+    cueBall.style.left = '50%';
+    cueBall.style.transform = 'translateX(-50%)';
+    document.getElementById('breakName1').classList.remove('active');
+    document.getElementById('breakName2').classList.remove('active');
     showScreen('setup');
   }
 
