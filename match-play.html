@@ -745,6 +745,34 @@
   }
 
 
+  /* ─── BALL ZOOM ANIMATION ─── */
+  #ball-zoom-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 900;
+    overflow: hidden;
+  }
+
+  .zoom-ball {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    width: 60px;
+    height: 60px;
+  }
+
+  .zoom-ball.firing {
+    animation: ballZoom 0.7s cubic-bezier(0.15, 0, 0.5, 1) forwards;
+  }
+
+  @keyframes ballZoom {
+    0%   { opacity: 1; transform: scale(0.4); filter: blur(0px);  }
+    55%  { opacity: 1; transform: scale(7);   filter: blur(1px);  }
+    100% { opacity: 0; transform: scale(18);  filter: blur(10px); }
+  }
+
   #raceto-modal {
     display: none;
     position: fixed;
@@ -1441,6 +1469,160 @@
   function buildTracks() { /* dots removed */ }
   function updateTracks() { /* dots removed */ }
 
+  // ── Web Audio break sound synthesiser ──
+  let audioCtx = null;
+
+  function getAudioCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+  }
+
+  function playBreakSound() {
+    try {
+      const ctx = getAudioCtx();
+      const now = ctx.currentTime;
+
+      // Sharp cue-ball crack - white noise burst
+      const bufLen = ctx.sampleRate * 0.08;
+      const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufLen; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufLen, 2);
+      }
+      const crack = ctx.createBufferSource();
+      crack.buffer = buf;
+      const crackFilter = ctx.createBiquadFilter();
+      crackFilter.type = 'bandpass';
+      crackFilter.frequency.value = 3200;
+      crackFilter.Q.value = 0.8;
+      const crackGain = ctx.createGain();
+      crackGain.gain.setValueAtTime(1.8, now);
+      crackGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      crack.connect(crackFilter);
+      crackFilter.connect(crackGain);
+      crackGain.connect(ctx.destination);
+      crack.start(now);
+
+      // Ball scatter clicks - multiple brief tones
+      const clickTimes = [0.04, 0.08, 0.11, 0.15, 0.19, 0.23, 0.28, 0.33, 0.38];
+      clickTimes.forEach((t, i) => {
+        const clickBuf = ctx.createBuffer(1, ctx.sampleRate * 0.025, ctx.sampleRate);
+        const cd = clickBuf.getChannelData(0);
+        const freq = 800 + Math.random() * 1200;
+        for (let j = 0; j < cd.length; j++) {
+          cd[j] = Math.sin(2 * Math.PI * freq * j / ctx.sampleRate)
+                  * Math.pow(1 - j / cd.length, 3)
+                  * (0.9 - i * 0.08);
+        }
+        const src = ctx.createBufferSource();
+        src.buffer = clickBuf;
+        const g = ctx.createGain();
+        g.gain.value = 0.6 - i * 0.05;
+        src.connect(g);
+        g.connect(ctx.destination);
+        src.start(now + t);
+      });
+
+      // Low thud body
+      const osc = ctx.createOscillator();
+      const oscGain = ctx.createGain();
+      osc.frequency.setValueAtTime(120, now);
+      osc.frequency.exponentialRampToValueAtTime(40, now + 0.15);
+      oscGain.gain.setValueAtTime(0.5, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+      osc.connect(oscGain);
+      oscGain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.18);
+
+    } catch(e) { /* audio not supported, silent fail */ }
+  }
+
+  // ── Ball zoom animation ──
+  function getBallSVG(type) {
+    if (type === '9ball') {
+      return `<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="z9g" cx="38%" cy="32%" r="62%">
+            <stop offset="0%" stop-color="#ffe566"/>
+            <stop offset="50%" stop-color="#e8c020"/>
+            <stop offset="100%" stop-color="#b89000"/>
+          </radialGradient>
+          <radialGradient id="z9s" cx="36%" cy="28%" r="26%">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.6)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+          </radialGradient>
+        </defs>
+        <circle cx="30" cy="30" r="29" fill="url(#z9g)"/>
+        <path d="M4,22 Q30,13 56,22 L56,38 Q30,47 4,38 Z" fill="#fff" opacity="0.92"/>
+        <circle cx="30" cy="30" r="10" fill="#fff"/>
+        <text x="30" y="35" font-family="Arial,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">9</text>
+        <circle cx="30" cy="30" r="29" fill="url(#z9s)"/>
+      </svg>`;
+    } else if (type === '10ball') {
+      return `<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="z10g" cx="38%" cy="32%" r="62%">
+            <stop offset="0%" stop-color="#5599ff"/>
+            <stop offset="50%" stop-color="#1a55cc"/>
+            <stop offset="100%" stop-color="#0a2a88"/>
+          </radialGradient>
+          <radialGradient id="z10s" cx="36%" cy="28%" r="26%">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.55)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+          </radialGradient>
+        </defs>
+        <circle cx="30" cy="30" r="29" fill="url(#z10g)"/>
+        <path d="M4,22 Q30,13 56,22 L56,38 Q30,47 4,38 Z" fill="#fff" opacity="0.92"/>
+        <circle cx="30" cy="30" r="10" fill="#fff"/>
+        <text x="30" y="35" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#111">10</text>
+        <circle cx="30" cy="30" r="29" fill="url(#z10s)"/>
+      </svg>`;
+    } else {
+      // 8ball default
+      return `<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="z8g" cx="38%" cy="32%" r="62%">
+            <stop offset="0%" stop-color="#3a3a3a"/>
+            <stop offset="45%" stop-color="#111"/>
+            <stop offset="100%" stop-color="#000"/>
+          </radialGradient>
+          <radialGradient id="z8s" cx="36%" cy="28%" r="26%">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.5)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+          </radialGradient>
+        </defs>
+        <circle cx="30" cy="30" r="29" fill="url(#z8g)"/>
+        <circle cx="30" cy="32" r="10" fill="#fff"/>
+        <text x="30" y="37" font-family="Arial,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">8</text>
+        <circle cx="30" cy="30" r="29" fill="url(#z8s)"/>
+      </svg>`;
+    }
+  }
+
+  function fireBallZoom(player) {
+    const overlay = document.getElementById('ball-zoom-overlay');
+    const panel = document.getElementById(player === 0 ? 'p1panel' : 'p2panel');
+    const scoreEl = document.getElementById(player === 0 ? 'p1score' : 'p2score');
+    const scoreRect = scoreEl.getBoundingClientRect();
+
+    // Position ball at centre of the score number
+    const cx = scoreRect.left + scoreRect.width / 2 - 30;
+    const cy = scoreRect.top + scoreRect.height / 2 - 30;
+
+    const ball = document.createElement('div');
+    ball.className = 'zoom-ball';
+    ball.style.left = cx + 'px';
+    ball.style.top  = cy + 'px';
+    ball.innerHTML  = getBallSVG(gameType);
+
+    overlay.appendChild(ball);
+    void ball.offsetWidth; // force reflow
+    ball.classList.add('firing');
+
+    ball.addEventListener('animationend', () => ball.remove());
+  }
+
   function addPoint(player) {
     if (matchOver) return;
     scores[player]++;
@@ -1451,6 +1633,10 @@
     scoreEl.classList.remove('bump');
     void scoreEl.offsetWidth;
     scoreEl.classList.add('bump');
+
+    // Fire ball zoom + sound
+    playBreakSound();
+    fireBallZoom(player);
 
     updateTracks();
 
@@ -1588,6 +1774,8 @@
     });
   }
 </script>
+<!-- BALL ZOOM OVERLAY -->
+<div id="ball-zoom-overlay"></div>
 
 </body>
 </html>
